@@ -1,0 +1,7 @@
+---------------------------------------------------------------
+                         COMMANDS LIST
+---------------------------------------------------------------
+HELP        [No Parameters]         Displays list of commands
+                                    and their information.
+
+EXIT        [No Parameters]         Exit the program cleanly.
