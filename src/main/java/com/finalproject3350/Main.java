@@ -1,3 +1,5 @@
+package com.finalproject3350;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -14,7 +16,7 @@ public class Main {
         // ----------------------------------------------------------
         switch(input[0].toUpperCase()){
             case "HELP":
-                System.out.println(Program.getResource("helpCommand.txt"));
+                System.out.println(Program.getResource("/helpCommand.txt"));
                 break;
             case "EXIT":
                 System.out.println("Exiting...");
@@ -68,7 +70,7 @@ public class Main {
             }
         }
 
-        System.out.print(Program.getResource("header.txt")
+        System.out.print(Program.getResource("/header.txt")
                 .replace("[ADDRESS_RUNTIME_SWAP]", Program.getAddress())
                 .replace("[PORT_RUNTIME_SWAP]", Program.getPort())
                 .replace("[DATABASE_RUNTIME_SWAP]", Program.getDatabase())
@@ -105,7 +107,7 @@ public class Main {
         }
         System.out.println("ACCEPTED");
 
-        System.out.println(Program.getResource("headerCommand.txt"));
+        System.out.println(Program.getResource("/headerCommand.txt"));
 
         while(true){
             System.out.print("> ");
@@ -178,6 +180,8 @@ public class Main {
 
     public String getResource(String fileName)
     {
+        System.out.println(getClass().getResource("").getPath());
+
         File resourceFile = new File(getClass().getResource(fileName).getPath());
         StringBuilder fileText = new StringBuilder();
 
@@ -201,7 +205,7 @@ public class Main {
         switch(arg){
             case "-h":
             case "--help":
-                System.out.println(Program.getResource("helpArguments.txt"));
+                System.out.println(Program.getResource("/helpArguments.txt"));
                 System.exit(0);
             case "-p":
             case "--port":
