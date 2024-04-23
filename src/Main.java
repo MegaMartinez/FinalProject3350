@@ -26,6 +26,15 @@ public class Main {
         return false;
     }
 
+    // To make things easier for you, here's a function specifically for taking input from the user.
+    // You probably won't need it since most prompting is done through the main feedback loop.
+    // Still, this could be useful for you in certain situations.
+    public static String prompt(String prompt){
+        System.out.print(prompt);
+        Scanner promptScan = new Scanner(System.in);
+        return promptScan.nextLine();
+    }
+
     public static void main(String[] args) throws ClassNotFoundException
     {
         Main Program = new Main();
