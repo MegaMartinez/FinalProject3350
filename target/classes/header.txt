@@ -1,6 +1,0 @@
-Employee Management Software 1.0.0
-The following can be changed with command line arguments. Use "--help" for details.
-Target Address: [ADDRESS_RUNTIME_SWAP]
-Target Port: [PORT_RUNTIME_SWAP]
-Target Database: [DATABASE_RUNTIME_SWAP]
-Target User: [USER_RUNTIME_SWAP]

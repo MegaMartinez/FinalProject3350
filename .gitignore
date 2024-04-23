@@ -2,9 +2,8 @@
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-.idea/dataSources/
-.idea/dataSources.local.xml
-.idea/dataSources.xml
+.idea
+*.iml
 
 ### Eclipse ###
 .apt_generated
@@ -31,3 +30,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# Maven
+.classpath
+.project
+.settings/
+target/

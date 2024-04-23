@@ -1,4 +1,0 @@
-==========================================================================================
-  TO CHECK THE AVAILABLE COMMANDS, TRY ENTERING "HELP" | COMMANDS ARE NOT CASE-SENSITIVE
-  USE "EXIT" TO QUIT THE PROGRAM
-==========================================================================================
