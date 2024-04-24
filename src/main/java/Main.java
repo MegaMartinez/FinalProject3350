@@ -1,27 +1,90 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Stream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 public class Main {
     public static boolean processInput(String inputRaw, Main Program){
+        
         String[] input = Stream.of(inputRaw.split(" ")).filter(w -> !w.isEmpty()).toArray(String[]::new);;
         // ----------------------------------------------------------
         // TODO: WRITE MORE COMMANDS IN HERE TO IMPLEMENT THE PROJECT
         // ----------------------------------------------------------
-        switch(input[0].toUpperCase()){
-            case "HELP":
-                System.out.println(Program.getResource("/helpCommand.txt"));
-                break;
-            case "EXIT":
-                System.out.println("Exiting...");
-                return true;
-            default:
-                System.out.println("Unrecognized Command: " + input[0]);
-                break;
+        String username = "root";
+        String password = getPassword();
+        try{
+            Connection connection = DriverManager.getConnection(url, username,password);
+            switch(input[0].toUpperCase()){
+                case "HELP":
+                    System.out.println(Program.getResource("/helpCommand.txt"));
+                    break;
+                case "UPDATE":
+                    String id = prompt("What is the employee ID?: ");
+                    if (!isValidEmployeeId(connection, id)) {
+                        System.out.println("Invalid employee ID.");
+                        break; // Exit the case if the employee ID is invalid
+                    }
+                    String field = prompt("What is the table you'd like to update?: ");
+                    String newData = prompt("What is the data you'd like to input?: ");
+                    List<String> validFields = Arrays.asList("empid","fname", "lname", "email","HireDate","Salary");
+                    if (!validFields.contains(field.toLowerCase())) {
+                        System.out.println("Invalid field.");
+                        break;
+                    }
+                    String query = "UPDATE employees SET "+field+ " = '" + newData + "' WHERE empid = " + id;
+                    Statement statement = connection.createStatement();
+                    int rowschanged = statement.executeUpdate(query);
+                    System.out.println("ROWS CHANGED: "+rowschanged);
+                
+                case "SEARCH":
+                    String searchId = prompt("What is the employee ID?: ");
+                    if (!isValidEmployeeId(connection, searchId)) {
+                        System.out.println("Invalid employee ID.");
+                        break; // Exit the case if the employee ID is invalid
+                    }
+                    String SearchQuery = "SELECT * FROM employees WHERE empid = " + searchId;
+                    Statement SearchStatement = connection.createStatement();
+                    ResultSet resultSet = SearchStatement.executeQuery(SearchQuery);
+                    while (resultSet.next()) {
+                        String name = resultSet.getString("fname");
+                        System.out.println("ID: " + resultSet.getInt("empid") + ", Name: " + resultSet.getString("fname")
+                        +" "+resultSet.getString("lname")+ ", Email: "+resultSet.getString("email")
+                        + ", HireDate: "+resultSet.getString("HireDate")+ ", Salary: "+resultSet.getString("Salary"));
+                    }
+                case "SALARYRAISE":
+                //UPDATE employees SET salary = salary * (1 + :percentage / 100) WHERE salary < :specifiedAmount;
+
+                    double percent = NumPrompt("What percentage do you want to raise the salaries by?: ");
+                    if (!(percent >= 0 && percent <= 100)) {
+                        {
+                            System.out.println("Invalid percentage.");
+                            break;
+                        }
+                    }
+                    double thresholdSalary = NumPrompt("What is the salary threshold for this raise?: "); 
+                    //Updates salary for employees with salary less than the threshold
+                    String RaiseQuery = "UPDATE employees SET salary = salary * (1 + " + percent + "/ 100) WHERE salary < " + thresholdSalary;
+                    Statement RaiseStatement = connection.createStatement();
+                    int rowsChanged = RaiseStatement.executeUpdate(RaiseQuery);
+                    System.out.println("ROWS CHANGED: "+rowsChanged);
+
+
+                case "EXIT":
+                    System.out.println("Exiting...");
+                    return true;
+                default:
+                    System.out.println("Unrecognized Command: " + input[0]);
+                    break;
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -33,6 +96,27 @@ public class Main {
         System.out.print(prompt);
         Scanner promptScan = new Scanner(System.in);
         return promptScan.nextLine();
+    }
+    public static Double NumPrompt(String prompt){
+        System.out.print(prompt);
+        Scanner NumPromptScan = new Scanner(System.in);
+        return NumPromptScan.nextDouble();
+    }
+
+    private static boolean isValidEmployeeId(Connection connection, String empId) throws SQLException {
+        if(!empId.matches("\\d+"))
+        {
+            return false;
+        }
+        String query = "SELECT COUNT(*) FROM employees WHERE empid = " + empId;
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+            if (resultSet.next()) {
+                int count = resultSet.getInt(1);
+                return count > 0;
+            }
+        }
+        return false; 
     }
 
     public static void main(String[] args) throws ClassNotFoundException
@@ -118,7 +202,7 @@ public class Main {
         }
     }
 
-    public String url = "jdbc:mysql://localhost:3306/employeeData";
+    public static String url = "jdbc:mysql://localhost:3306/employeeData";
     private void generateURL(){
         String tempUrl = "jdbc:mysql://[ADDRESS]:[PORT]/[DATABASE]";
         url = tempUrl
@@ -156,8 +240,8 @@ public class Main {
 
     public String username = "root";
 
-    private String password = "";
-    public String getPassword() {
+    private static String password = "";
+    public static String getPassword() {
         return password;
     }
     public boolean checkPassword(String passwordInput){
