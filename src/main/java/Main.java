@@ -108,7 +108,7 @@ public class Main {
                 searchSorter.close();
                 break;
 
-            case "SALARY RAISE":
+            case "SALARYRAISE":
                 RequestManage salaryManager = new RequestManage(Program);
                 salaryManager.updateSalary();
                 salaryManager.close();

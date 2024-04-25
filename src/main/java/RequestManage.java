@@ -1,3 +1,4 @@
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,7 +15,7 @@ public class RequestManage extends Request{
             System.out.println("Fill out the following fields. Remember to leave 'Single Quotes' around any strings!");
             List<String> columns = new ArrayList<>();
             List<String> values = new ArrayList<>();
-            for(int i = 1; i < colRes.getMetaData().getColumnCount(); i++){
+            for(int i = 1; i < colRes.getMetaData().getColumnCount()+1; i++){
                 columns.add(colRes.getMetaData().getColumnName(i));
                 String val = Main.prompt(colRes.getMetaData().getColumnName(i) + ": ");
                 if(val.equalsIgnoreCase("cancel")) return;
@@ -36,7 +37,10 @@ public class RequestManage extends Request{
                     queryString.append(", ").append(values.get(i));
             }
             queryString.append(");");
-            query(queryString.toString());
+            Statement statement = connection.createStatement();
+            int rowschanged = statement.executeUpdate(queryString.toString());
+            System.out.println("Rows Changed: "+rowschanged);
+            
         } catch (SQLException e){
             System.out.println("Failed to execute! Printing Stack Trace:");
             e.printStackTrace();
@@ -53,7 +57,10 @@ public class RequestManage extends Request{
             if(column.equalsIgnoreCase("cancel")) return;
             String key = Main.prompt("Which value to delete entries containing? ");
             if(column.equalsIgnoreCase("cancel")) return;
-            query("DELETE FROM " + table + " WHERE " + column + " LIKE " + key + ";");
+            String query = "DELETE FROM " + table + " WHERE " + column + " LIKE " + key + ";";
+            Statement statement = connection.createStatement();
+            int rowschanged = statement.executeUpdate(query);
+            System.out.println("Rows Changed: "+rowschanged);
         } catch(SQLException e){
             System.out.println("Failed to execute! Printing Stack Trace:");
             e.printStackTrace();
@@ -109,9 +116,12 @@ public class RequestManage extends Request{
 //                System.out.println("Invalid field.");
 //                return;
 //            }
-                String query = "UPDATE employees SET " + field + " = '" + newData + "' WHERE " + columnIdentifier + " LIKE " + id;
-                Statement statement = connection.createStatement();
-                int rowschanged = statement.executeUpdate(query);
+                String query = "UPDATE employees SET " + field + " = ? WHERE " + columnIdentifier + " = ?";
+                PreparedStatement pstmt = connection.prepareStatement(query);
+                pstmt.setString(1, newData); // Assuming newData is the updated email
+                pstmt.setInt(2, Integer.parseInt(id)); 
+                int rowschanged = pstmt.executeUpdate();
+
                 System.out.println("ROWS CHANGED: " + rowschanged);
             } else {
                 String searchCol = Main.prompt("Which column would you like to match entries in? ");
@@ -153,13 +163,17 @@ public class RequestManage extends Request{
                         newType = Main.prompt("What is the new type you would like for this column" +
                                 "(feel free to include other attributes such as 'not null' if you want)? ");
                         if(newType.equalsIgnoreCase("cancel")) return;
-                        query("ALTER TABLE " + table + " ADD " + colName + " " + newType + ";");
+                        String query= "ALTER TABLE " + table + " ADD " + colName + " " + newType + ";";
+                        Statement statement = connection.createStatement();
+                        statement.executeUpdate(query);
                         loop = false;
                         break;
                     case "drop column":
                         colName = Main.prompt("What column would you like to drop? ");
                         if (colName.equalsIgnoreCase("cancel")) return;
-                        query("ALTER TABLE " + table + " DROP COLUMN " + colName + ";");
+                        String query2= "ALTER TABLE " + table + " DROP COLUMN " + colName + ";";
+                        Statement statement2 = connection.createStatement();
+                        statement2.executeUpdate(query2);
                         loop = false;
                         break;
                     case "alter column":
@@ -168,7 +182,9 @@ public class RequestManage extends Request{
                         newType = Main.prompt("What is the new type you would like for this column" +
                                 "(feel free to include other attributes such as 'not null' if you want)? ");
                         if(newType.equalsIgnoreCase("cancel")) return;
-                        query("ALTER TABLE " + table + " ALTER COLUMN " + colName + " " + newType + ";");
+                        String query3= "ALTER TABLE " + table + " MODIFY " + colName + " " + newType + ";";
+                        Statement statement3 = connection.createStatement();
+                        statement3.executeUpdate(query3);
                         loop = false;
                         break;
                     case "cancel":
