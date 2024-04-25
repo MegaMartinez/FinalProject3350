@@ -11,8 +11,9 @@ import java.sql.Statement;
 public class Main {
     public static boolean processInput(String inputRaw, Main Program){
         String[] input = Stream.of(inputRaw.split(" ")).filter(w -> !w.isEmpty()).toArray(String[]::new);
+        if(input.length <= 0) return false;
         // ----------------------------------------------------------
-        // TODO: WRITE MORE COMMANDS IN HERE TO IMPLEMENT THE PROJECT
+        // DONE: WRITE MORE COMMANDS IN HERE TO IMPLEMENT THE PROJECT
         // ----------------------------------------------------------
         switch(input[0].toUpperCase()){
             case "HELP":
@@ -83,20 +84,41 @@ public class Main {
                 report.close();
                 break;
 
+            case "INSERT":
+                RequestManage insertManager = new RequestManage(Program);
+                insertManager.addEmp();
+                insertManager.close();
+                break;
+
+            case "ALTER":
+                RequestManage alterManager = new RequestManage(Program);
+                alterManager.rewriteTable();
+                alterManager.close();
+                break;
+
             case "UPDATE":
                 RequestManage updateManager = new RequestManage(Program);
                 updateManager.updateEmp();
                 updateManager.close();
+                break;
 
             case "SEARCH":
                 RequestSorter searchSorter = new RequestSorter(Program);
                 searchSorter.searchEmp();
                 searchSorter.close();
+                break;
 
-            case "SALARYRAISE":
+            case "SALARY RAISE":
                 RequestManage salaryManager = new RequestManage(Program);
                 salaryManager.updateSalary();
                 salaryManager.close();
+                break;
+
+            case "DELETE":
+                RequestManage deleteManager = new RequestManage(Program);
+                deleteManager.deleteEmp();
+                deleteManager.close();
+                break;
 
             case "QUERY":
                 Request manualRequest = new Request(Program);
@@ -144,6 +166,17 @@ public class Main {
                     e.printStackTrace();
                 }
                 manualRequest.close();
+                break;
+
+            case "RESET DATABASE":
+                System.out.println("ARE YOU REALLY SURE?");
+                System.out.println("THIS WILL ERASE ALL ENTRIES PRESENT IN THE " +
+                        "DATABASE AND RESET TABLES TO THEIR DEFAULT CONFIGURATION");
+                if(TFPrompt("ARE YOU SURE YOU WANT TO CONFIRM THIS ACTION? [true/false]: ")){
+                    RequestManage resetManage = new RequestManage(Program);
+                    resetManage.resetDatabase();
+                    resetManage.close();
+                }
                 break;
 
             case "EXIT":
@@ -336,8 +369,6 @@ public class Main {
 
     public String getResource(String fileName)
     {
-        System.out.println(getClass().getResource("").getPath());
-
         File resourceFile = new File(getClass().getResource(fileName).getPath());
         StringBuilder fileText = new StringBuilder();
 

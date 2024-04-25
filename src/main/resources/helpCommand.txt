@@ -1,7 +1,33 @@
 ---------------------------------------------------------------
                          COMMANDS LIST
 ---------------------------------------------------------------
-HELP        [No Parameters]         Displays list of commands
-                                    and their information.
+HELP                Displays list of commands and their
+                    information.
 
-EXIT        [No Parameters]         Exit the program cleanly.
+EXIT                Exit the program cleanly.
+
+SEARCH              Search a specified table by a certain filter.
+
+UPDATE              Updates a specified value to another one of
+                    your choice.
+
+INSERT              Insert an entry of your own into a specified
+                    table.
+
+SALARY RAISE        Raise salaries below a specified threshold by
+                    a specified percentage.
+
+DELETE              Deletes a specified entry from a specified table.
+
+ALTER               Alter a table's columns by your own parameters.
+
+RESET DATABASE      Will reset the database to factory conditions,
+                    deleting everything else in the process. Exercise
+                    caution when using this one.
+
+REPORT              Make a specialized report of certain data with
+                    constraints of your choice.
+
+QUERY               Execute SQL statements of your own via the command
+                    line interface. Useful for making use of advanced
+                    functionality not included in a predefined command.

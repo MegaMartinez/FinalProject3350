@@ -103,6 +103,20 @@ SELECT * FROM employees e LEFT JOIN payroll p ON e.empid = p.empid;
 -- This next one is somewhat experimental. We may end up not using it.
 -- START INIT DEFAULT
 
+DELETE FROM employees;
+DELETE FROM employee_division;
+DELETE FROM employee_job_titles;
+DELETE FROM division;
+DELETE FROM job_titles;
+DELETE FROM employee_job_titles;
+
+DROP TABLE employees;
+DROP TABLE employee_division;
+DROP TABLE employee_job_titles;
+DROP TABLE division;
+DROP TABLE job_titles;
+DROP TABLE employee_job_titles;
+
 CREATE TABLE IF NOT EXISTS employees (
                            empid INT NOT NULL AUTO_INCREMENT,
                            Fname VARCHAR(65) NOT NULL,
@@ -151,13 +165,6 @@ CREATE TABLE IF NOT EXISTS employee_division (
                                    empid int NOT NULL,
                                    div_ID int NOT NULL
 ) COMMENT='links employee to a division';
-
-DELETE FROM employees;
-DELETE FROM employee_division;
-DELETE FROM employee_job_titles;
-DELETE FROM division;
-DELETE FROM job_titles;
-DELETE FROM employee_job_titles;
 
 ALTER TABLE employees AUTO_INCREMENT = 1;
 ALTER TABLE employee_division AUTO_INCREMENT = 1;
