@@ -1,21 +1,14 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Stream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
 public class Main {
-    public static boolean processInput(String inputRaw, Main Program){
+    public static boolean processInput(String inputRaw, Main Program) {
         String[] input = Stream.of(inputRaw.split(" ")).filter(w -> !w.isEmpty()).toArray(String[]::new);
-        if(input.length <= 0) return false;
-        // ----------------------------------------------------------
-        // DONE: WRITE MORE COMMANDS IN HERE TO IMPLEMENT THE PROJECT
-        // ----------------------------------------------------------
-        switch(input[0].toUpperCase()){
+        if (input.length == 0) return false;
+        switch (input[0].toUpperCase()) {
             case "HELP":
                 System.out.println(Program.getResource("/helpCommand.txt"));
                 break;
@@ -29,14 +22,13 @@ public class Main {
 
                 boolean runLoop = true;
                 RequestReport report = new RequestReport(Program);
-                while(runLoop){
-                    String reportType =
-                            prompt("Select a prompt:\n - Employee\n - Job Title\n - Division\n - Cancel\nEnter: ");
-                    switch(reportType.toLowerCase()){
+                while (runLoop) {
+                    String reportType = prompt("Select a prompt:\n - Employee\n - Job Title\n - Division\n - Cancel\nEnter: ");
+                    switch (reportType.toLowerCase()) {
                         case "employee":
-                            if(TFPrompt("Report on All? [true/false]: ")){
+                            if (TFPrompt("Report on All? [true/false]: ")) {
                                 report.empInfoReport(false, null, null);
-                            } else if(TFPrompt("Report on Full Name? [true/false]: ")) {
+                            } else if (TFPrompt("Report on Full Name? [true/false]: ")) {
                                 String fullname = prompt("Full name of employee to report on: ");
                                 report.empInfoReport(true, "CONCAT(Fname, ' ', Lname)", fullname);
                             } else {
@@ -47,12 +39,12 @@ public class Main {
                             runLoop = false;
                             break;
                         case "job title":
-                            if(TFPrompt("Report on Pay-date Range? [true/false]: ")){
+                            if (TFPrompt("Report on Pay-date Range? [true/false]: ")) {
                                 start = prompt("Start of the date range (yyyy-mm-dd): ");
                                 end = prompt("End of the date range (yyyy-mm-dd): ");
                                 useDate = true;
                             }
-                            if(TFPrompt("Report on Name-Matching Titles? [true/false]: ")){
+                            if (TFPrompt("Report on Name-Matching Titles? [true/false]: ")) {
                                 reportName = prompt("Title name filter: ");
                                 useName = true;
                             }
@@ -61,12 +53,12 @@ public class Main {
                             runLoop = false;
                             break;
                         case "division":
-                            if(TFPrompt("Report on Pay-date Range? [true/false]: ")){
+                            if (TFPrompt("Report on Pay-date Range? [true/false]: ")) {
                                 start = prompt("Start of the date range (yyyy-mm-dd): ");
                                 end = prompt("End of the date range (yyyy-mm-dd): ");
                                 useDate = true;
                             }
-                            if(TFPrompt("Report on Name-Matching Divisions? [true/false]: ")){
+                            if (TFPrompt("Report on Name-Matching Divisions? [true/false]: ")) {
                                 reportName = prompt("Division name filter: ");
                                 useName = true;
                             }
@@ -108,7 +100,7 @@ public class Main {
                 searchSorter.close();
                 break;
 
-            case "SALARYRAISE":
+            case "SALARY_RAISE":
                 RequestManage salaryManager = new RequestManage(Program);
                 salaryManager.updateSalary();
                 salaryManager.close();
@@ -122,29 +114,29 @@ public class Main {
 
             case "QUERY":
                 Request manualRequest = new Request(Program);
-                try{
+                try {
                     ResultSet res = manualRequest.query(prompt("$ "));
                     List<String[]> rows = new ArrayList<>();
                     rows.add(new String[res.getMetaData().getColumnCount()]);
-                    for(int i = 1; i < res.getMetaData().getColumnCount(); i++){
+                    for (int i = 1; i < res.getMetaData().getColumnCount(); i++) {
                         rows.get(0)[i - 1] = res.getMetaData().getColumnName(i);
                     }
-                    while(res.next()){
+                    while (res.next()) {
                         String[] row = new String[rows.get(0).length];
-                        for(int i = 0; i < rows.get(0).length; i++){
+                        for (int i = 0; i < rows.get(0).length; i++) {
                             row[i] = res.getString(i + 1);
                         }
                         rows.add(row);
                     }
                     int[] lengths = new int[rows.get(0).length];
 
-                    for(int i = 0; i < rows.size(); i++){
-                        for(int j = 0; j < rows.get(i).length; j++){
-                            if(rows.get(i)[j] == null){
-                                if(4 > lengths[j]){
+                    for (int i = 0; i < rows.size(); i++) {
+                        for (int j = 0; j < rows.get(i).length; j++) {
+                            if (rows.get(i)[j] == null) {
+                                if (4 > lengths[j]) {
                                     lengths[j] = 4;
                                 }
-                            } else if(rows.get(i)[j].length() > lengths[j]){
+                            } else if (rows.get(i)[j].length() > lengths[j]) {
                                 lengths[j] = rows.get(i)[j].length();
                             }
                         }
@@ -152,27 +144,26 @@ public class Main {
 
                     StringBuilder format = new StringBuilder();
 
-                    for(int i = 0; i < lengths.length; i++){
+                    for (int i = 0; i < lengths.length; i++) {
                         format.append("%-").append(lengths[i] + 2).append("s");
                     }
                     format.append("\n");
 
                     System.out.format(format.toString(), (Object[]) rows.get(0));
                     System.out.println("-".repeat(Arrays.stream(lengths).sum()));
-                    for(int i = 1; i < rows.size(); i++){
+                    for (int i = 1; i < rows.size(); i++) {
                         System.out.format(format.toString(), (Object[]) rows.get(i));
                     }
-                } catch (SQLException e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 manualRequest.close();
                 break;
 
-            case "RESET DATABASE":
+            case "RESET_DATABASE":
                 System.out.println("ARE YOU REALLY SURE?");
-                System.out.println("THIS WILL ERASE ALL ENTRIES PRESENT IN THE " +
-                        "DATABASE AND RESET TABLES TO THEIR DEFAULT CONFIGURATION");
-                if(TFPrompt("ARE YOU SURE YOU WANT TO CONFIRM THIS ACTION? [true/false]: ")){
+                System.out.println("THIS WILL ERASE ALL ENTRIES PRESENT IN THE " + "DATABASE AND RESET TABLES TO THEIR DEFAULT CONFIGURATION");
+                if (TFPrompt("ARE YOU SURE YOU WANT TO CONFIRM THIS ACTION? [true/false]: ")) {
                     RequestManage resetManage = new RequestManage(Program);
                     resetManage.resetDatabase();
                     resetManage.close();
@@ -182,6 +173,7 @@ public class Main {
             case "EXIT":
                 System.out.println("Exiting...");
                 return true;
+
             default:
                 System.out.println("Unrecognized Command: " + input[0]);
                 break;
@@ -189,69 +181,60 @@ public class Main {
         return false;
     }
 
-    public static String prompt(String prompt){
+    public static String prompt(String prompt) {
         System.out.print(prompt);
         Scanner promptScan = new Scanner(System.in);
         return promptScan.nextLine();
     }
-    public static boolean TFPrompt(String prompt){
+
+    public static boolean TFPrompt(String prompt) {
         System.out.print(prompt);
         Scanner promptScan = new Scanner(System.in);
         try {
             return promptScan.nextBoolean();
-        } catch (InputMismatchException e){
+        } catch (InputMismatchException e) {
             System.out.println("Invalid Response! Value must be \"true\" or \"false\"");
             return TFPrompt(prompt);
         }
     }
-    public static Double NumPrompt(String prompt){
-        System.out.print(prompt);
-        Scanner NumPromptScan = new Scanner(System.in);
-        return NumPromptScan.nextDouble();
-    }
 
     public static boolean isValidEmployeeId(Connection connection, String empId) throws SQLException {
-        if(!empId.matches("\\d+"))
-        {
+        if (!empId.matches("\\d+")) {
             return false;
         }
         String query = "SELECT COUNT(*) FROM employees WHERE empid = " + empId;
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)) {
+        try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(query)) {
             if (resultSet.next()) {
                 int count = resultSet.getInt(1);
                 return count > 0;
             }
         }
-        return false; 
+        return false;
     }
 
-    public static void main(String[] args) throws ClassNotFoundException
-    {
+    public static void main(String[] args) throws ClassNotFoundException {
         Main Program = new Main();
         Class.forName("com.mysql.cj.jdbc.Driver");
 
-        for(int i = 0; i < args.length; i++){
-            if(args[i].startsWith("-")){
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("-")) {
                 String arg = args[i];
                 String[] params;
                 int j = i;
-                while(true){
-                    if(j + 1 < args.length)
-                        if(args[j + 1].startsWith("-")) break;
-                    if(j == args.length) break;
+                while (true) {
+                    if (j + 1 < args.length) if (args[j + 1].startsWith("-")) break;
+                    if (j == args.length) break;
                     j++;
                 }
-                if(j > i){
+                if (j > i) {
                     params = new String[j - i];
                 } else {
                     params = new String[0];
                 }
                 j = i;
-                while(true){
-                    if(i + 1 < args.length)
-                        if(args[i + 1].startsWith("-")) break;
-                    if(i == args.length) break;
+                while (true) {
+                    if (i + 1 < args.length) if (args[i + 1].startsWith("-")) break;
+                    if (i == args.length) break;
                     params[0] = args[i - j];
                     i++;
                 }
@@ -266,29 +249,29 @@ public class Main {
                 .replace("[USER_RUNTIME_SWAP]", Program.username));
 
         int attempts = 0;
-        if(System.console() == null){
+        if (System.console() == null) {
             System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!");
             System.out.println("             YOU ARE USING THIS ON AN IDE TERMINAL");
             System.out.println("  PASSWORD OBSCURITY IS ONLY SUPPORTED FOR A GENUINE TERMINAL");
             System.out.println("       SWITCH TO A GENUINE TERMINAL FOR INPUT OBSCURITY\n");
         }
 
-        while(true){
+        while (true) {
             attempts++;
             System.out.print("Enter Password: ");
 
-            if(System.console() == null){
+            if (System.console() == null) {
                 Scanner passScan = new Scanner(System.in);
                 String input = passScan.nextLine();
 
-                if(Program.checkPassword(input)) break;
-                else if(attempts >= 3){
+                if (Program.checkPassword(input)) break;
+                else if (attempts >= 3) {
                     System.out.println("ACCESS DENIED");
                     System.exit(0);
                 }
             } else {
-                if(Program.checkPassword(new String(System.console().readPassword()))) break;
-                else if(attempts >= 3){
+                if (Program.checkPassword(new String(System.console().readPassword()))) break;
+                else if (attempts >= 3) {
                     System.out.println("ACCESS DENIED");
                     System.exit(0);
                 }
@@ -298,48 +281,52 @@ public class Main {
 
         System.out.println(Program.getResource("/headerCommand.txt"));
 
-        while(true){
+        while (true) {
             System.out.print("> ");
             Scanner inputScan = new Scanner(System.in);
             String input = inputScan.nextLine();
 
-            if(processInput(input, Program)){
+            if (processInput(input, Program)) {
                 break;
             }
         }
     }
 
     public String url = "jdbc:mysql://localhost:3306/employeeData";
-    private void generateURL(){
+
+    private void generateURL() {
         String tempUrl = "jdbc:mysql://[ADDRESS]:[PORT]/[DATABASE]";
-        url = tempUrl
-                .replace("[ADDRESS]", address)
-                .replace("[PORT]", port)
-                .replace("[DATABASE]", database);
+        url = tempUrl.replace("[ADDRESS]", address).replace("[PORT]", port).replace("[DATABASE]", database);
     }
 
     private String address = "localhost";
+
     public String getAddress() {
         return address;
     }
+
     public void setAddress(String address) {
         this.address = address;
         generateURL();
     }
 
     private String port = "3306";
+
     public String getPort() {
         return port;
     }
+
     public void setPort(String port) {
         this.port = port;
         generateURL();
     }
 
     private String database = "employeeData";
+
     public String getDatabase() {
         return database;
     }
+
     public void setDatabase(String database) {
         this.database = database;
         generateURL();
@@ -348,15 +335,17 @@ public class Main {
     public String username = "root";
 
     private String password = "";
+
     public String getPassword() {
         return password;
     }
-    public boolean checkPassword(String passwordInput){
+
+    public boolean checkPassword(String passwordInput) {
         try {
             Connection testConnection = DriverManager.getConnection(url, username, passwordInput);
             testConnection.close();
-        } catch(SQLException e){
-            if(!e.getMessage().contains("Access denied")){
+        } catch (SQLException e) {
+            if (!e.getMessage().contains("Access denied")) {
                 e.printStackTrace();
                 System.exit(1);
             }
@@ -367,36 +356,31 @@ public class Main {
         return true;
     }
 
-    public String getResource(String fileName)
-    {
+    public String getResource(String fileName) {
         File resourceFile = new File(getClass().getResource(fileName).getPath());
         StringBuilder fileText = new StringBuilder();
 
-        try
-        {
+        try {
             Scanner fileScanner = new Scanner(resourceFile);
-            while(fileScanner.hasNextLine())
-            {
+            while (fileScanner.hasNextLine()) {
                 fileText.append(fileScanner.nextLine()).append('\n');
             }
-        }
-        catch(FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             return null;
         }
         return fileText.toString();
     }
 
-    public static void processArg(String arg, String[] params, Main Program){
-        switch(arg){
+    public static void processArg(String arg, String[] params, Main Program) {
+        switch (arg) {
             case "-h":
             case "--help":
                 System.out.println(Program.getResource("/helpArguments.txt"));
                 System.exit(0);
             case "-p":
             case "--port":
-                if(params.length < 1){
+                if (params.length < 1) {
                     System.out.println("AN ARGUMENT MUST BE PROVIDED FOR " + arg);
                     System.out.println("USING DEFAULT PORT");
                 } else {
@@ -413,7 +397,7 @@ public class Main {
             case "-u":
             case "--user":
             case "--username":
-                if(params.length < 1){
+                if (params.length < 1) {
                     System.out.println("AN ARGUMENT MUST BE PROVIDED FOR " + arg);
                     System.out.println("USING DEFAULT USERNAME");
                 } else {
@@ -423,7 +407,7 @@ public class Main {
             case "-d":
             case "-db":
             case "--database":
-                if(params.length < 1){
+                if (params.length < 1) {
                     System.out.println("AN ARGUMENT MUST BE PROVIDED FOR " + arg);
                     System.out.println("USING DEFAULT DATABASE");
                 } else {
@@ -433,7 +417,7 @@ public class Main {
             case "-a":
             case "--addr":
             case "--address":
-                if(params.length < 1){
+                if (params.length < 1) {
                     System.out.println("AN ARGUMENT MUST BE PROVIDED FOR " + arg);
                     System.out.println("USING DEFAULT ADDRESS");
                 } else {

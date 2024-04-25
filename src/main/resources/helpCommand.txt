@@ -14,14 +14,14 @@ UPDATE              Updates a specified value to another one of
 INSERT              Insert an entry of your own into a specified
                     table.
 
-SALARY RAISE        Raise salaries below a specified threshold by
+SALARY_RAISE        Raise salaries below a specified threshold by
                     a specified percentage.
 
 DELETE              Deletes a specified entry from a specified table.
 
 ALTER               Alter a table's columns by your own parameters.
 
-RESET DATABASE      Will reset the database to factory conditions,
+RESET_DATABASE      Will reset the database to factory conditions,
                     deleting everything else in the process. Exercise
                     caution when using this one.
 

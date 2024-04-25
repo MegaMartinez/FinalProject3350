@@ -1,19 +1,19 @@
-import java.sql.*;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RequestReport extends Request {
-    public void empInfoReport(boolean useWhere, String col, String param){
+    public void empInfoReport(boolean useWhere, String col, String param) {
         try {
             ResultSet res;
 
-            if(useWhere){
+            if (useWhere) {
                 res = query(sqlScript.substring(
-                        sqlScript.lastIndexOf("-- START EMP REPORT WHERE"),
-                        sqlScript.lastIndexOf("-- END EMP REPORT WHERE")
-                )
-                        .replace("/*COL*/", col)
-                        .replace("/*PARAM*/", param)
+                                        sqlScript.lastIndexOf("-- START EMP REPORT WHERE"),
+                                        sqlScript.lastIndexOf("-- END EMP REPORT WHERE")
+                                )
+                                .replace("/*COL*/", col)
+                                .replace("/*PARAM*/", param)
                 );
             } else {
                 res = query(sqlScript.substring(
@@ -23,15 +23,15 @@ public class RequestReport extends Request {
             }
 
             int currentID = -1;
-            while(res.next()){
-                if(currentID != res.getInt("e.empid")){
+            while (res.next()) {
+                if (currentID != res.getInt("e.empid")) {
                     currentID = res.getInt("e.empid");
 
                     int i;
                     List<String> EmployeeHeaders = new ArrayList<>();
 
                     i = 1;
-                    while(!res.getMetaData().getColumnName(i).equals("payID")){
+                    while (!res.getMetaData().getColumnName(i).equals("payID")) {
                         EmployeeHeaders.add(res.getMetaData().getColumnName(i));
                         i++;
                     }
@@ -41,7 +41,7 @@ public class RequestReport extends Request {
                     int total = 0;
 
                     i = 0;
-                    for(; i < EmployeeHeaders.size(); i++){
+                    for (; i < EmployeeHeaders.size(); i++) {
                         EmployeeData[i] = res.getString(EmployeeHeaders.get(i));
                         int len = EmployeeData[i].length() + 2 >= EmployeeHeaders.get(i).length()
                                 ? EmployeeData[i].length() + 2 : EmployeeHeaders.get(i).length() + 2;
@@ -60,8 +60,8 @@ public class RequestReport extends Request {
 
                     i = res.findColumn("payID");
                     total = 0;
-                    for(; i < res.getMetaData().getColumnCount(); i++){
-                        if(res.getMetaData().getColumnName(i).equals("p.empid")) continue;
+                    for (; i < res.getMetaData().getColumnCount(); i++) {
+                        if (res.getMetaData().getColumnName(i).equals("p.empid")) continue;
 
                         PayHeaders.add(res.getMetaData().getColumnName(i));
                         formatStr.append("%-12s");
@@ -77,8 +77,8 @@ public class RequestReport extends Request {
                 List<String> PayData = new ArrayList<>();
 
                 int i = res.findColumn("payID");
-                for(; i < res.getMetaData().getColumnCount(); i++){
-                    if(res.getMetaData().getColumnName(i).equals("p.empid")) continue;
+                for (; i < res.getMetaData().getColumnCount(); i++) {
+                    if (res.getMetaData().getColumnName(i).equals("p.empid")) continue;
 
                     PayData.add(res.getString(i));
                     formatStr.append("%-12s");
@@ -87,18 +87,18 @@ public class RequestReport extends Request {
 
                 System.out.format(formatStr.toString(), PayData.toArray());
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("Failed to execute! Printing Stack Trace:");
             e.printStackTrace();
             System.out.println("\nSystem is still running just press enter a couple times.");
         }
     }
 
-    public void titlePayReport(boolean useDates, String start, String end, boolean useName, String jobName){
+    public void titlePayReport(boolean useDates, String start, String end, boolean useName, String jobName) {
         try {
             ResultSet res;
 
-            if(useDates && useName){
+            if (useDates && useName) {
                 res = query(sqlScript.substring(
                                         sqlScript.lastIndexOf("-- START TITLE REPORT WHERE"),
                                         sqlScript.lastIndexOf("-- END TITLE REPORT WHERE")
@@ -107,7 +107,7 @@ public class RequestReport extends Request {
                                 .replace("/*END DATE*/", "'" + end + "'")
                                 .replace("/*TITLE NAME*/", "'" + jobName + "'")
                 );
-            } else if(useDates){
+            } else if (useDates) {
                 res = query(sqlScript.substring(
                                         sqlScript.lastIndexOf("-- START TITLE REPORT DATE WHERE"),
                                         sqlScript.lastIndexOf("-- END TITLE REPORT DATE WHERE")
@@ -115,7 +115,7 @@ public class RequestReport extends Request {
                                 .replace("/*START DATE*/", "'" + start + "'")
                                 .replace("/*END DATE*/", "'" + end + "'")
                 );
-            } else if(useName){
+            } else if (useName) {
                 res = query(sqlScript.substring(
                                         sqlScript.lastIndexOf("-- START TITLE REPORT NAME WHERE"),
                                         sqlScript.lastIndexOf("-- END TITLE REPORT NAME WHERE")
@@ -143,8 +143,8 @@ public class RequestReport extends Request {
             List<String[]> rows = new ArrayList<>();
 
             String currentId = "";
-            while(res.next()){
-                if(!currentId.equals(res.getString("job_title_id"))){
+            while (res.next()) {
+                if (!currentId.equals(res.getString("job_title_id"))) {
                     currentId = res.getString("job_title_id");
 
                     job_title_id.add(res.getString("job_title_id"));
@@ -154,10 +154,10 @@ public class RequestReport extends Request {
                 } else {
                     int last = job_title_id.size() - 1;
 
-                    if(pay_date.get(last).equals(res.getString("pay_date").substring(0, 7))){
+                    if (pay_date.get(last).equals(res.getString("pay_date").substring(0, 7))) {
                         earnings.set(
-                            last,
-                            Math.round((earnings.get(last) + res.getDouble("earnings")) * 100) / 100.0
+                                last,
+                                Math.round((earnings.get(last) + res.getDouble("earnings")) * 100) / 100.0
                         );
                     } else {
                         job_title_id.add(res.getString("job_title_id"));
@@ -168,8 +168,8 @@ public class RequestReport extends Request {
                 }
             }
 
-            for(int i = 0; i < job_title_id.size(); i++){
-                rows.add(new String[] {
+            for (int i = 0; i < job_title_id.size(); i++) {
+                rows.add(new String[]{
                         job_title_id.get(i),
                         job_title.get(i),
                         pay_date.get(i),
@@ -180,34 +180,34 @@ public class RequestReport extends Request {
             int a = headers[0].length();
             int b = headers[1].length();
             int c = headers[2].length();
-            for(int i = 0; i < job_title_id.size(); i++){
-                if(job_title_id.get(i).length() > a){
+            for (int i = 0; i < job_title_id.size(); i++) {
+                if (job_title_id.get(i).length() > a) {
                     a = job_title_id.get(i).length();
                 }
-                if(job_title.get(i).length() > b){
+                if (job_title.get(i).length() > b) {
                     b = job_title.get(i).length();
                 }
-                if(pay_date.get(i).length() > c){
+                if (pay_date.get(i).length() > c) {
                     c = pay_date.get(i).length();
                 }
             }
 
             String format = "%-" + (a + 2) + "s%-" + (b + 2) + "s%-" + (c + 2) + "s%-12s\n";
             System.out.format(format, (Object[]) headers);
-            for(int i = 0; i < rows.size(); i++){
+            for (int i = 0; i < rows.size(); i++) {
                 System.out.format(format, (Object[]) rows.get(i));
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("Failed to execute! Printing Stack Trace:");
             e.printStackTrace();
             System.out.println("\nSystem is still running just press enter a couple times.");
         }
     }
 
-    public void divPayReport(boolean useDates, String start, String end, boolean useName, String divName){
+    public void divPayReport(boolean useDates, String start, String end, boolean useName, String divName) {
         try {
             ResultSet res;
-            if(useDates && useName){
+            if (useDates && useName) {
                 res = query(sqlScript.substring(
                                         sqlScript.lastIndexOf("-- START DIV REPORT WHERE"),
                                         sqlScript.lastIndexOf("-- END DIV REPORT WHERE")
@@ -216,7 +216,7 @@ public class RequestReport extends Request {
                                 .replace("/*END DATE*/", "'" + end + "'")
                                 .replace("/*DIV NAME*/", "'" + divName + "'")
                 );
-            } else if(useDates){
+            } else if (useDates) {
                 res = query(sqlScript.substring(
                                         sqlScript.lastIndexOf("-- START DIV REPORT DATE WHERE"),
                                         sqlScript.lastIndexOf("-- END DIV REPORT DATE WHERE")
@@ -224,7 +224,7 @@ public class RequestReport extends Request {
                                 .replace("/*START DATE*/", "'" + start + "'")
                                 .replace("/*END DATE*/", "'" + end + "'")
                 );
-            } else if(useName){
+            } else if (useName) {
                 res = query(sqlScript.substring(
                                         sqlScript.lastIndexOf("-- START DIV REPORT NAME WHERE"),
                                         sqlScript.lastIndexOf("-- END DIV REPORT NAME WHERE")
@@ -252,8 +252,8 @@ public class RequestReport extends Request {
             List<String[]> rows = new ArrayList<>();
 
             String currentId = "";
-            while(res.next()){
-                if(!currentId.equals(res.getString("ID"))){
+            while (res.next()) {
+                if (!currentId.equals(res.getString("ID"))) {
                     currentId = res.getString("ID");
 
                     division_id.add(res.getString("ID"));
@@ -263,7 +263,7 @@ public class RequestReport extends Request {
                 } else {
                     int last = division_id.size() - 1;
 
-                    if(pay_date.get(last).equals(res.getString("pay_date").substring(0, 7))){
+                    if (pay_date.get(last).equals(res.getString("pay_date").substring(0, 7))) {
                         earnings.set(
                                 last,
                                 Math.round((earnings.get(last) + res.getDouble("earnings")) * 100) / 100.0
@@ -277,8 +277,8 @@ public class RequestReport extends Request {
                 }
             }
 
-            for(int i = 0; i < division_id.size(); i++){
-                rows.add(new String[] {
+            for (int i = 0; i < division_id.size(); i++) {
+                rows.add(new String[]{
                         division_id.get(i),
                         division_name.get(i),
                         pay_date.get(i),
@@ -289,24 +289,24 @@ public class RequestReport extends Request {
             int a = headers[0].length();
             int b = headers[1].length();
             int c = headers[2].length();
-            for(int i = 0; i < division_id.size(); i++){
-                if(division_id.get(i).length() > a){
+            for (int i = 0; i < division_id.size(); i++) {
+                if (division_id.get(i).length() > a) {
                     a = division_id.get(i).length();
                 }
-                if(division_name.get(i).length() > b){
+                if (division_name.get(i).length() > b) {
                     b = division_name.get(i).length();
                 }
-                if(pay_date.get(i).length() > c){
+                if (pay_date.get(i).length() > c) {
                     c = pay_date.get(i).length();
                 }
             }
 
             String format = "%-" + (a + 2) + "s%-" + (b + 2) + "s%-" + (c + 2) + "s%-12s\n";
             System.out.format(format, (Object[]) headers);
-            for(int i = 0; i < rows.size(); i++){
+            for (int i = 0; i < rows.size(); i++) {
                 System.out.format(format, (Object[]) rows.get(i));
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("Failed to execute! Printing Stack Trace:");
             e.printStackTrace();
             System.out.println("\nSystem is still running just press enter a couple times.");

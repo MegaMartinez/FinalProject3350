@@ -6,7 +6,7 @@ public class Request {
     protected final Connection connection;
 
     public ResultSet query(String query) throws SQLException {
-        if(closed){
+        if (closed) {
             System.out.println("Attempted to query closed connection!");
             return null;
         }
@@ -16,11 +16,11 @@ public class Request {
     }
 
     public void close() {
-        if(closed) return;
+        if (closed) return;
         try {
             connection.close();
             closed = true;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -28,7 +28,7 @@ public class Request {
     public Request(Main Program) {
         try {
             connection = DriverManager.getConnection(Program.url, Program.username, Program.getPassword());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         sqlScript = Program.getResource("/sqlBuiltIn.sql");
