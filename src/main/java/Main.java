@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.stream.Stream;
 import java.sql.Connection;
@@ -12,90 +11,118 @@ import java.sql.Statement;
 
 public class Main {
     public static boolean processInput(String inputRaw, Main Program){
-        
-        String[] input = Stream.of(inputRaw.split(" ")).filter(w -> !w.isEmpty()).toArray(String[]::new);;
+        String[] input = Stream.of(inputRaw.split(" ")).filter(w -> !w.isEmpty()).toArray(String[]::new);
         // ----------------------------------------------------------
         // TODO: WRITE MORE COMMANDS IN HERE TO IMPLEMENT THE PROJECT
         // ----------------------------------------------------------
-        String username = "root";
-        String password = getPassword();
-        try{
-            Connection connection = DriverManager.getConnection(url, username,password);
-            switch(input[0].toUpperCase()){
-                case "HELP":
-                    System.out.println(Program.getResource("/helpCommand.txt"));
-                    break;
-                case "UPDATE":
-                    String id = prompt("What is the employee ID?: ");
-                    if (!isValidEmployeeId(connection, id)) {
-                        System.out.println("Invalid employee ID.");
-                        break; // Exit the case if the employee ID is invalid
-                    }
-                    String field = prompt("What is the table you'd like to update?: ");
-                    String newData = prompt("What is the data you'd like to input?: ");
-                    List<String> validFields = Arrays.asList("empid","fname", "lname", "email","HireDate","Salary");
-                    if (!validFields.contains(field.toLowerCase())) {
-                        System.out.println("Invalid field.");
-                        break;
-                    }
-                    String query = "UPDATE employees SET "+field+ " = '" + newData + "' WHERE empid = " + id;
-                    Statement statement = connection.createStatement();
-                    int rowschanged = statement.executeUpdate(query);
-                    System.out.println("ROWS CHANGED: "+rowschanged);
-                
-                case "SEARCH":
-                    String searchId = prompt("What is the employee ID?: ");
-                    if (!isValidEmployeeId(connection, searchId)) {
-                        System.out.println("Invalid employee ID.");
-                        break; // Exit the case if the employee ID is invalid
-                    }
-                    String SearchQuery = "SELECT * FROM employees WHERE empid = " + searchId;
-                    Statement SearchStatement = connection.createStatement();
-                    ResultSet resultSet = SearchStatement.executeQuery(SearchQuery);
-                    while (resultSet.next()) {
-                        String name = resultSet.getString("fname");
-                        System.out.println("ID: " + resultSet.getInt("empid") + ", Name: " + resultSet.getString("fname")
-                        +" "+resultSet.getString("lname")+ ", Email: "+resultSet.getString("email")
-                        + ", HireDate: "+resultSet.getString("HireDate")+ ", Salary: "+resultSet.getString("Salary"));
-                    }
-                case "SALARYRAISE":
-                //UPDATE employees SET salary = salary * (1 + :percentage / 100) WHERE salary < :specifiedAmount;
+        switch(input[0].toUpperCase()){
+            case "HELP":
+                System.out.println(Program.getResource("/helpCommand.txt"));
+                break;
 
-                    double percent = NumPrompt("What percentage do you want to raise the salaries by?: ");
-                    if (!(percent >= 0 && percent <= 100)) {
-                        {
-                            System.out.println("Invalid percentage.");
+            case "REPORT":
+                boolean useDate = false;
+                boolean useName = false;
+                String start = null;
+                String end = null;
+                String reportName = null;
+
+                boolean runLoop = true;
+                RequestReport report = new RequestReport(Program);
+                while(runLoop){
+                    String reportType =
+                            prompt("Select a prompt:\n - Employee\n - Job Title\n - Division\n - Cancel\nEnter: ");
+                    switch(reportType.toLowerCase()){
+                        case "employee":
+                            if(TFPrompt("Report on All? [true/false]: ")){
+                                report.empInfoReport(false, null, null);
+                            } else if(TFPrompt("Report on Full Name? [true/false]: ")) {
+                                String fullname = prompt("Full name of employee to report on: ");
+                                report.empInfoReport(true, "CONCAT(Fname, ' ', Lname)", fullname);
+                            } else {
+                                String col = prompt("Which column to filter on: ");
+                                String val = prompt("Which value to filter by (include 'single quotes' if value is a string): ");
+                                report.empInfoReport(true, col, val);
+                            }
+                            runLoop = false;
                             break;
-                        }
+                        case "job title":
+                            if(TFPrompt("Report on Pay-date Range? [true/false]: ")){
+                                start = prompt("Start of the date range (yyyy-mm-dd): ");
+                                end = prompt("End of the date range (yyyy-mm-dd): ");
+                                useDate = true;
+                            }
+                            if(TFPrompt("Report on Name-Matching Titles? [true/false]: ")){
+                                reportName = prompt("Title name filter: ");
+                                useName = true;
+                            }
+                            report.titlePayReport(useDate, start, end, useName, reportName);
+
+                            runLoop = false;
+                            break;
+                        case "division":
+                            if(TFPrompt("Report on Pay-date Range? [true/false]: ")){
+                                start = prompt("Start of the date range (yyyy-mm-dd): ");
+                                end = prompt("End of the date range (yyyy-mm-dd): ");
+                                useDate = true;
+                            }
+                            if(TFPrompt("Report on Name-Matching Divisions? [true/false]: ")){
+                                reportName = prompt("Division name filter: ");
+                                useName = true;
+                            }
+                            report.divPayReport(useDate, start, end, useName, reportName);
+
+                            runLoop = false;
+                            break;
+                        case "cancel":
+                            runLoop = false;
+                            break;
+                        default:
+                            System.out.println("Invalid answer, try again!");
                     }
-                    double thresholdSalary = NumPrompt("What is the salary threshold for this raise?: "); 
-                    //Updates salary for employees with salary less than the threshold
-                    String RaiseQuery = "UPDATE employees SET salary = salary * (1 + " + percent + "/ 100) WHERE salary < " + thresholdSalary;
-                    Statement RaiseStatement = connection.createStatement();
-                    int rowsChanged = RaiseStatement.executeUpdate(RaiseQuery);
-                    System.out.println("ROWS CHANGED: "+rowsChanged);
+                }
+                report.close();
+                break;
 
+            case "UPDATE":
+                RequestManage updateManager = new RequestManage(Program);
+                updateManager.updateEmp();
+                updateManager.close();
 
-                case "EXIT":
-                    System.out.println("Exiting...");
-                    return true;
-                default:
-                    System.out.println("Unrecognized Command: " + input[0]);
-                    break;
-            }
-        }catch (Exception e) {
-            e.printStackTrace();
+            case "SEARCH":
+                RequestSorter searchSorter = new RequestSorter(Program);
+                searchSorter.searchEmp();
+                searchSorter.close();
+
+            case "SALARYRAISE":
+                RequestManage salaryManager = new RequestManage(Program);
+                salaryManager.updateSalary();
+                salaryManager.close();
+
+            case "EXIT":
+                System.out.println("Exiting...");
+                return true;
+            default:
+                System.out.println("Unrecognized Command: " + input[0]);
+                break;
         }
         return false;
     }
 
-    // To make things easier for you, here's a function specifically for taking input from the user.
-    // You probably won't need it since most prompting is done through the main feedback loop.
-    // Still, this could be useful for you in certain situations.
     public static String prompt(String prompt){
         System.out.print(prompt);
         Scanner promptScan = new Scanner(System.in);
         return promptScan.nextLine();
+    }
+    public static boolean TFPrompt(String prompt){
+        System.out.print(prompt);
+        Scanner promptScan = new Scanner(System.in);
+        try {
+            return promptScan.nextBoolean();
+        } catch (InputMismatchException e){
+            System.out.println("Invalid Response! Value must be \"true\" or \"false\"");
+            return TFPrompt(prompt);
+        }
     }
     public static Double NumPrompt(String prompt){
         System.out.print(prompt);
@@ -103,7 +130,7 @@ public class Main {
         return NumPromptScan.nextDouble();
     }
 
-    private static boolean isValidEmployeeId(Connection connection, String empId) throws SQLException {
+    public static boolean isValidEmployeeId(Connection connection, String empId) throws SQLException {
         if(!empId.matches("\\d+"))
         {
             return false;
@@ -202,7 +229,7 @@ public class Main {
         }
     }
 
-    public static String url = "jdbc:mysql://localhost:3306/employeeData";
+    public String url = "jdbc:mysql://localhost:3306/employeeData";
     private void generateURL(){
         String tempUrl = "jdbc:mysql://[ADDRESS]:[PORT]/[DATABASE]";
         url = tempUrl
@@ -240,8 +267,8 @@ public class Main {
 
     public String username = "root";
 
-    private static String password = "";
-    public static String getPassword() {
+    private String password = "";
+    public String getPassword() {
         return password;
     }
     public boolean checkPassword(String passwordInput){
