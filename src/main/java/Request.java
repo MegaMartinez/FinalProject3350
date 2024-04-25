@@ -16,6 +16,7 @@ public class Request {
     }
 
     public void close() {
+        if(closed) return;
         try {
             connection.close();
             closed = true;

@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Stream;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -98,6 +97,54 @@ public class Main {
                 RequestManage salaryManager = new RequestManage(Program);
                 salaryManager.updateSalary();
                 salaryManager.close();
+
+            case "QUERY":
+                Request manualRequest = new Request(Program);
+                try{
+                    ResultSet res = manualRequest.query(prompt("$ "));
+                    List<String[]> rows = new ArrayList<>();
+                    rows.add(new String[res.getMetaData().getColumnCount()]);
+                    for(int i = 1; i < res.getMetaData().getColumnCount(); i++){
+                        rows.get(0)[i - 1] = res.getMetaData().getColumnName(i);
+                    }
+                    while(res.next()){
+                        String[] row = new String[rows.get(0).length];
+                        for(int i = 0; i < rows.get(0).length; i++){
+                            row[i] = res.getString(i + 1);
+                        }
+                        rows.add(row);
+                    }
+                    int[] lengths = new int[rows.get(0).length];
+
+                    for(int i = 0; i < rows.size(); i++){
+                        for(int j = 0; j < rows.get(i).length; j++){
+                            if(rows.get(i)[j] == null){
+                                if(4 > lengths[j]){
+                                    lengths[j] = 4;
+                                }
+                            } else if(rows.get(i)[j].length() > lengths[j]){
+                                lengths[j] = rows.get(i)[j].length();
+                            }
+                        }
+                    }
+
+                    StringBuilder format = new StringBuilder();
+
+                    for(int i = 0; i < lengths.length; i++){
+                        format.append("%-").append(lengths[i] + 2).append("s");
+                    }
+                    format.append("\n");
+
+                    System.out.format(format.toString(), (Object[]) rows.get(0));
+                    System.out.println("-".repeat(Arrays.stream(lengths).sum()));
+                    for(int i = 1; i < rows.size(); i++){
+                        System.out.format(format.toString(), (Object[]) rows.get(i));
+                    }
+                } catch (SQLException e){
+                    e.printStackTrace();
+                }
+                manualRequest.close();
+                break;
 
             case "EXIT":
                 System.out.println("Exiting...");
